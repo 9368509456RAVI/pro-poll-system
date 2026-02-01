@@ -89,10 +89,22 @@ font-size:14px;letter-spacing:1px;text-align:center;}
 <script>
 let previousTotal = 0;
 
-if(localStorage.getItem("voted")){
-  document.querySelectorAll(".btn").forEach(b=>b.disabled=true);
-  document.getElementById("msg").innerText="🗳 You already voted";
+let currentPollId = null;
+
+async function checkPollStatus(){
+  const res = await fetch('/api/settings');
+  const data = await res.json();
+
+  currentPollId = data.pollId;
+
+  if(localStorage.getItem("votedPollId") == currentPollId){
+    document.querySelectorAll(".btn").forEach(b=>b.disabled=true);
+    document.getElementById("msg").innerText="🗳 You already voted";
+  }
 }
+
+checkPollStatus();
+
 
 async function vote(option){
   if(localStorage.getItem("voted")) return;
@@ -103,7 +115,7 @@ async function vote(option){
   document.getElementById("popup").style.transform="translate(-50%,-50%) scale(1)";
   setTimeout(()=>{document.getElementById("popup").style.transform="translate(-50%,-50%) scale(0)";},2000);
 
-localStorage.setItem("voted","true");
+localStorage.setItem("votedPollId", currentPollId);
 document.querySelectorAll(".btn").forEach(b=>b.disabled=true);
 
 // DB ko update hone ka time dete hain
@@ -146,6 +158,7 @@ setInterval(loadResults,5000);
 </script>
 </body>
 </html>
+
 
 
 
