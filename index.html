@@ -109,21 +109,28 @@ async function vote(option){
 }
 
 async function loadResults(){
-  const res=await fetch('/api/results');
-  const data=await res.json();
-  let total=0; data.forEach(d=>total+=d.count);
+  const res = await fetch('/api/results');
+  const data = await res.json();
 
-  if(previousTotal && total>previousTotal){
-    document.getElementById("msg").innerText = `Total votes increased from ${previousTotal} to ${total} 📈`;
+  let total = 0;
+  data.forEach(d => total += d.count);
+
+  if(previousTotal && total > previousTotal){
+    document.getElementById("msg").innerText =
+      `Total votes increased from ${previousTotal} to ${total} 📈`;
   }
   previousTotal = total;
-/* ====== MAPPING EDIT ====== */
-updateBar("r1","p1",map["Ganda Vyavhar"],total);
-updateBar("r2","p2",map["Bura Vyavhar"],total);
-updateBar("r3","p3",map["Achha Vyavhar"],total);
-updateBar("r4","p4",map["Pyar Karta/Karti Hu"],total);
 
+  // 🔥 YE LINE MISSING THI
+  const map = {};
+  data.forEach(d => map[d._id] = d.count);
+
+  updateBar("r1","p1",map["Ganda Vyavhar"],total);
+  updateBar("r2","p2",map["Bura Vyavhar"],total);
+  updateBar("r3","p3",map["Achha Vyavhar"],total);
+  updateBar("r4","p4",map["Pyar Karta/Karti Hu"],total);
 }
+
 
 function updateBar(barId,pId,val,total){
   const percent= total? Math.round((val||0)/total*100):0;
@@ -136,6 +143,7 @@ setInterval(loadResults,5000);
 </script>
 </body>
 </html>
+
 
 
 
