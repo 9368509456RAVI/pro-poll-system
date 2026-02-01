@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>⚡ Community Pulse Poll</title>
+
+<style>
+/* ====== SAME STYLES AS BEFORE (UNCHANGED UI) ====== */
+body{margin:0;font-family:'Segoe UI',sans-serif;color:#fff;overflow:hidden;}
+body::before{content:"";position:fixed;width:200%;height:200%;
+background:radial-gradient(circle at 20% 30%, #00c6ff33, transparent 40%),
+radial-gradient(circle at 80% 70%, #8e2de233, transparent 40%),
+linear-gradient(-45deg,#0f2027,#203a43,#2c5364,#1c1c2b);
+background-size:400% 400%;animation:bgMove 18s ease infinite;z-index:-2;}
+@keyframes bgMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+body::after{content:"";position:fixed;width:100%;height:100%;
+background:radial-gradient(circle at 30% 20%, #ffffff11, transparent 60%),
+radial-gradient(circle at 70% 80%, #ffffff11, transparent 60%);
+animation:floatLights 12s ease-in-out infinite alternate;z-index:-1;}
+@keyframes floatLights{from{transform:translateY(-20px)}to{transform:translateY(20px)}}
+.container{display:flex;justify-content:center;align-items:center;height:100vh;}
+.card{width:95%;max-width:480px;padding:28px;border-radius:20px;backdrop-filter:blur(20px);
+background:rgba(255,255,255,0.08);box-shadow:0 0 60px rgba(0,0,0,0.6);}
+h2{text-align:center;margin-bottom:18px;}
+.btn{position:relative;cursor:pointer;padding:14px;margin:9px 0;font-size:15px;border:none;
+border-radius:12px;color:#fff;overflow:hidden;width:100%;transition:transform .08s ease, box-shadow .2s ease;
+box-shadow:0 6px 0 rgba(0,0,0,.25);}
+.btn span{position:relative;z-index:3;}
+.btn:active{transform:translateY(4px) scale(.98);box-shadow:0 2px 0 rgba(0,0,0,.25);}
+.btn::after{content:"";position:absolute;inset:0;background:rgba(255,255,255,.25);opacity:0;
+transition:opacity .25s ease;z-index:2;}
+.btn:active::after{opacity:1;transition:opacity 0s;}
+.btn::before{content:'';position:absolute;inset:0;border-radius:inherit;transform:scale(0);
+transition:transform .4s ease;z-index:1;opacity:.35;}
+.btn:hover::before{transform:scale(1);}
+.b1{background:#00c6ff}.b1::before{background:#005f8a}
+.b2{background:#ffd200}.b2::before{background:#8c6d00}
+.b3{background:#ff4e50}.b3::before{background:#7f0000}
+.b4{background:#8e2de2}.b4::before{background:#2e0854}
+.results{margin-top:25px;}
+.bar{height:20px;background:rgba(255,255,255,0.15);border-radius:12px;overflow:hidden;margin:10px 0;}
+.fill{height:100%;width:0%;transition:width 1s cubic-bezier(.22,.61,.36,1);}
+.f1{background:#00c6ff}.f2{background:#ffd200}.f3{background:#ff4e50}.f4{background:#8e2de2}
+.percent{text-align:right;font-size:13px;margin-top:3px;opacity:.85;}
+#msg{text-align:center;margin-top:10px;font-size:14px;}
+/* Popup */
+#popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);
+background:#111;color:white;padding:18px 28px;border-radius:12px;
+box-shadow:0 0 25px rgba(0,0,0,.6);z-index:99;transition:transform .3s ease;
+font-size:14px;letter-spacing:1px;text-align:center;}
+</style>
+</head>
+
+<body>
+<div class="container">
+<div class="card">
+<h2>⚡ COMMUNITY PULSE POLL</h2>
+
+<button class="btn b1" onclick="vote('Strongly Support')"><span>👍 Strongly Support</span></button>
+<button class="btn b2" onclick="vote('Support')"><span>🙂 Support</span></button>
+<button class="btn b3" onclick="vote('Against')"><span>👎 Against</span></button>
+<button class="btn b4" onclick="vote('Strongly Against')"><span>🚫 Strongly Against</span></button>
+
+<p id="msg"></p>
+
+<div class="results">
+  <div class="bar"><div id="r1" class="fill f1"></div></div><div class="percent" id="p1"></div>
+  <div class="bar"><div id="r2" class="fill f2"></div></div><div class="percent" id="p2"></div>
+  <div class="bar"><div id="r3" class="fill f3"></div></div><div class="percent" id="p3"></div>
+  <div class="bar"><div id="r4" class="fill f4"></div></div><div class="percent" id="p4"></div>
+</div>
+</div>
+</div>
+
+<div id="popup">ᴛʜᴀɴᴋ ʏᴏᴜ ғᴏʀ ᴠᴏᴛɪɴɢ 🗳️✨</div>
+
+<script>
+let previousTotal = 0;
+
+if(localStorage.getItem("voted")){
+  document.querySelectorAll(".btn").forEach(b=>b.disabled=true);
+  document.getElementById("msg").innerText="🗳 You already voted";
+}
+
+async function vote(option){
+  if(localStorage.getItem("voted")) return;
+  const res=await fetch('/api/vote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({option})});
+  const data=await res.json();
+  document.getElementById("msg").innerText=data.message;
+
+  document.getElementById("popup").style.transform="translate(-50%,-50%) scale(1)";
+  setTimeout(()=>{document.getElementById("popup").style.transform="translate(-50%,-50%) scale(0)";},2000);
+
+  localStorage.setItem("voted","true");
+  document.querySelectorAll(".btn").forEach(b=>b.disabled=true);
+  loadResults();
+}
+
+async function loadResults(){
+  const res=await fetch('/api/results');
+  const data=await res.json();
+  let total=0; data.forEach(d=>total+=d.count);
+
+  if(previousTotal && total>previousTotal){
+    document.getElementById("msg").innerText = `Total votes increased from ${previousTotal} to ${total} 📈`;
+  }
+  previousTotal = total;
+
+  const map={}; data.forEach(d=>map[d._id]=d.count);
+  updateBar("r1","p1",map["Strongly Support"],total);
+  updateBar("r2","p2",map["Support"],total);
+  updateBar("r3","p3",map["Against"],total);
+  updateBar("r4","p4",map["Strongly Against"],total);
+}
+
+function updateBar(barId,pId,val,total){
+  const percent= total? Math.round((val||0)/total*100):0;
+  document.getElementById(barId).style.width=percent+"%";
+  document.getElementById(pId).innerText=percent+"%";
+}
+
+loadResults();
+setInterval(loadResults,5000);
+</script>
+</body>
+</html>
