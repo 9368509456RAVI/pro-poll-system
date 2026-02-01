@@ -88,7 +88,6 @@ font-size:14px;letter-spacing:1px;text-align:center;}
 
 <script>
 let previousTotal = 0;
-
 let currentPollId = null;
 
 async function checkPollStatus(){
@@ -105,22 +104,26 @@ async function checkPollStatus(){
 
 checkPollStatus();
 
-
 async function vote(option){
-  if(localStorage.getItem("voted")) return;
-  const res=await fetch('/api/vote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({option})});
-  const data=await res.json();
-  document.getElementById("msg").innerText=data.message;
+  // NEW poll-based protection
+  if(localStorage.getItem("votedPollId") == currentPollId) return;
+
+  const res = await fetch('/api/vote',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({option})
+  });
+
+  const data = await res.json();
+  document.getElementById("msg").innerText = data.message;
 
   document.getElementById("popup").style.transform="translate(-50%,-50%) scale(1)";
   setTimeout(()=>{document.getElementById("popup").style.transform="translate(-50%,-50%) scale(0)";},2000);
 
-localStorage.setItem("votedPollId", currentPollId);
-document.querySelectorAll(".btn").forEach(b=>b.disabled=true);
+  localStorage.setItem("votedPollId", currentPollId);
+  document.querySelectorAll(".btn").forEach(b=>b.disabled=true);
 
-// DB ko update hone ka time dete hain
-setTimeout(loadResults, 800);
-
+  setTimeout(loadResults, 800);
 }
 
 async function loadResults(){
@@ -136,7 +139,6 @@ async function loadResults(){
   }
   previousTotal = total;
 
-  // 🔥 YE LINE MISSING THI
   const map = {};
   data.forEach(d => map[d._id] = d.count);
 
@@ -146,18 +148,19 @@ async function loadResults(){
   updateBar("r4","p4",map["Pyar Karta/Karti Hu"],total);
 }
 
-
 function updateBar(barId,pId,val,total){
-  const percent= total? Math.round((val||0)/total*100):0;
-  document.getElementById(barId).style.width=percent+"%";
-  document.getElementById(pId).innerText=percent+"%";
+  const percent = total ? Math.round((val||0)/total*100) : 0;
+  document.getElementById(barId).style.width = percent + "%";
+  document.getElementById(pId).innerText = percent + "%";
 }
 
 loadResults();
 setInterval(loadResults,5000);
+
 </script>
 </body>
 </html>
+
 
 
 
