@@ -117,12 +117,12 @@ async function loadResults(){
     document.getElementById("msg").innerText = `Total votes increased from ${previousTotal} to ${total} 📈`;
   }
   previousTotal = total;
+/* ====== MAPPING EDIT ====== */
+updateBar("r1","p1",map["Ganda Vyavhar"],total);
+updateBar("r2","p2",map["Bura Vyavhar"],total);
+updateBar("r3","p3",map["Achha Vyavhar"],total);
+updateBar("r4","p4",map["Pyar Karta/Karti Hu"],total);
 
-  const map={}; data.forEach(d=>map[d._id]=d.count);
-  updateBar("r1","p1",map["Strongly Support"],total);
-  updateBar("r2","p2",map["Support"],total);
-  updateBar("r3","p3",map["Against"],total);
-  updateBar("r4","p4",map["Strongly Against"],total);
 }
 
 function updateBar(barId,pId,val,total){
@@ -136,5 +136,6 @@ setInterval(loadResults,5000);
 </script>
 </body>
 </html>
+
 
 
