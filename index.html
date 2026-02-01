@@ -103,9 +103,12 @@ async function vote(option){
   document.getElementById("popup").style.transform="translate(-50%,-50%) scale(1)";
   setTimeout(()=>{document.getElementById("popup").style.transform="translate(-50%,-50%) scale(0)";},2000);
 
-  localStorage.setItem("voted","true");
-  document.querySelectorAll(".btn").forEach(b=>b.disabled=true);
-  loadResults();
+localStorage.setItem("voted","true");
+document.querySelectorAll(".btn").forEach(b=>b.disabled=true);
+
+// DB ko update hone ka time dete hain
+setTimeout(loadResults, 800);
+
 }
 
 async function loadResults(){
@@ -143,6 +146,7 @@ setInterval(loadResults,5000);
 </script>
 </body>
 </html>
+
 
 
 
